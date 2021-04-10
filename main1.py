@@ -6,12 +6,13 @@ from matplotlib import pyplot as plt
 from scipy.interpolate import make_interp_spline
 from PyQt5.QtWidgets import *
 from PyQt5 import *
-import pyqtgraph as pg
+
 
 from kpas import kpa     #导入压力转换模块
-import globalvar as gl   #导入自建的全局变量
+import globalvar as gl   #导入自建的全局变量，用存储所有工位号及其实时数据，内部时字典格式
 
 from x import Ui_MainWindow   #导入主窗口
+import datab
 import booll,floatt    #导入开关阀和调节阀子窗口 
 import tx,qx
  
@@ -22,7 +23,6 @@ cgitb.enable()        #异常捕捉
 
 lock = QMutex()   #实例化锁,针对数据读取和数据刷新两个线程
 lock1 = QMutex()   #实例化锁,针对自建的全局变量
-
 q=queue.Queue()   #实例化队列，针对控制消息获取
 
 
@@ -34,15 +34,17 @@ xpdindex=[]
 xptype=[]
 xh=[]  #用于存储采集的现场信号
 jp=[]    #存储控件对应的数值索引
+address=""   #用于存储TCP服务器地址及端口
+size=0       #用于存储从TCP服务器接收的数据字节数
 
-
+'''
 class Main(Ui_MainWindow):
     def __init__(self):
         super().__init__()
         
     def prt(self):
         print("jjjj")
-
+'''
 
 #建立TCP通信
 tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -71,24 +73,24 @@ PZDO=[]
 for i in range(1,wsai_nrows):
     j= wsai.cell(row=i+1, column=1).value    #获取1+1行，第一列的值
     PZAI.append(j)
-print(PZAI)
+#print(PZAI)
 #读AO表格
 for i in range(1,wsao_nrows):
     j= wsao.cell(row=i+1, column=1).value    #获取1+1行，第一列的值
     PZAO.append(j)
-print(PZAO)
+#print(PZAO)
 
 #读DI表格
 for i in range(1,wsdi_nrows):
     j= wsdi.cell(row=i+1, column=1).value    #获取1+1行，第一列的值
     PZDI.append(j)
-print(PZDI)
+#print(PZDI)
 
 #读Do表格
 for i in range(1,wsdo_nrows):
     j= wsdo.cell(row=i+1, column=1).value    #获取1+1行，第一列的值
     PZDO.append(j)
-print(PZDO)
+#print(PZDO)
 
 #计算模拟量的个数
 xo=len(PZAI)+len(PZAO)
@@ -113,7 +115,7 @@ class Child(QWidget):
 
 #首次运行时，根据配置表搜索前面板控件的函数，
 def click_success():
-    print("start qt5")
+    #print("start qt5")
     
     global xp
     global PZAI
@@ -163,9 +165,8 @@ class Mythread0(QThread):
         time.sleep(1)
         
         global xp
-        global PZAI
         while True:
-            time.sleep(0.2)
+            time.sleep(0.1)
            
             #发送信号到刷新函数,触发界面刷新函数
             #self.breakSignal.emit(str(a))
@@ -173,11 +174,7 @@ class Mythread0(QThread):
             lock.lock()
             global xh
             global tcp_socket
-            '''
-            xh.clear()
-            for i in range(50):
-                xh.append(random.randint(0,2))
-            '''
+
             xxx=tcp_socket.recv(206)
             xh=xxx.decode('UTF-8').split(" ")
             
@@ -255,40 +252,35 @@ def chuli(a):
             k.setStyleSheet("background: rgb(0,255,0)")
         else:
             k.setStyleSheet("background: rgb(255,255,255)")
+
   
-    #xh.clear()
-
-    '''
-    xxx=gl.get_value('score') 
-    ui.e7.setText(str(xxx))
-    lock.acquire()
-    xh.append(random.randint(0,9))
-    lock.release()
-    '''
-   
-    #xxx=gl.get_value('score')   #获取值
-    #gl.set_value('e2', "23")     #设定值
-    '''
-    ui.e1.setText(a)
-    ui.e2.setText(a)
-    ui.e3.setText(a)
-    '''
-
 
 #打开 调节阀窗口函数
 def convert( x,p):
-    print(x)
+    #print(x)
     p.open()
-    '''
-    Ph.open()
-    '''
+
     
 #打开 开关阀窗口函数
 def convertt( x,p):
-    print(x)
+    #print(x)
     p.open()
+
+
+class MyWindow(QMainWindow, datab.Ui_MainWindow):
+    def __init__(self, parent=None):
+        super(MyWindow, self).__init__(parent)
+        self.setupUi(self)
    
-    
+
+
+###继承主界面的类
+class Main(Ui_MainWindow):
+    def __init__(self):
+        super().__init__()
+        
+    def prt(self):
+        print("jjjj")
 
 
 if __name__ == '__main__':
@@ -304,8 +296,11 @@ if __name__ == '__main__':
     child = QMainWindow()          
     child_ui = tx.Ui_MainWindow()
     child_ui.setupUi(child)
-    #打开自定义子窗口
     ui.tx.clicked.connect( child.show ) 
+  
+    m=MyWindow()
+    ui.pzb.clicked.connect( m.open) 
+    
 
 
 
