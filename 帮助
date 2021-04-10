@@ -1,0 +1,1 @@
+pyuic5 -o x.py x.ui   根据ui文件生成x.py
