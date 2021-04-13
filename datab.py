@@ -15,7 +15,10 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout,QLineEdit
 import globalvar as gl
 import gwh as gw
+import shuju as sj
 
+xp1=[]
+xp1index=[]
 
 class Ui_MainWindow(object):
     def __init__(self):          
@@ -26,11 +29,25 @@ class Ui_MainWindow(object):
     #重写打开事件
     def open(self):
         print("fffgddddddddddddg")
+        global xp1index
+        global xp1
+        j1=0
+        for i in gw.get():
+            try:
+                if self.findChild(QLineEdit,i):   #根据反馈AI工位号获取前面板控件
+                    xp1.append(self.findChild(QLineEdit,i))
+                    xp1index.append(j1)
+                    j1+=1
+                else:
+                    j1+=1
+            except:
+                pass
+        j1=0
         #自动开始线程
         self.sub_thread.is_on = True         # 5
         self.sub_thread.start()
         self.show()
-    
+        
     #重写关闭事件
     #重写关闭事件
     def closeEvent(self, event):
@@ -135,10 +152,15 @@ class Ui_MainWindow(object):
     
     #接收到子线程信号的处理函数,在子窗口显示反馈信息
     def set_label_func(self, fs0,fs1):
-        #h=gw.get_value()
-        #self.e10.setText(fs1)
         h=gw.get()
-        self.e10.setText(h[2])
+        s=sj.get()
+
+        
+        global xp1index
+        global xp1
+        for i,j in zip(xp1,xp1index):
+            i.setText(s[j])
+      
         
 #子窗口用于刷新信号的线程
 
@@ -154,4 +176,4 @@ class subThread(QThread):
         while self.is_on:   # 2
             self.sub_signal.emit("world",str(a))  #发送获取的值,用于更新子窗口的数
             a=a+1
-            time.sleep(1)
+            time.sleep(0.3)
