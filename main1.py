@@ -10,6 +10,7 @@ from PyQt5 import *
 
 from kpas import kpa     #导入压力转换模块
 import globalvar as gl   #导入自建的全局变量，用存储所有工位号及其实时数据，内部时字典格式
+import gwh as gw
 
 from x import Ui_MainWindow   #导入主窗口
 import datab
@@ -17,7 +18,9 @@ import booll,floatt    #导入开关阀和调节阀子窗口
 import tx,qx
  
 gl._init()            #全局变量初始化
+#gw._init()            #全局变量初始化
 cgitb.enable()        #异常捕捉
+
 
 
 
@@ -94,7 +97,7 @@ for i in range(1,wsdo_nrows):
 
 #计算模拟量的个数
 xo=len(PZAI)+len(PZAO)
-'''
+
 #定义子窗口
 class Child(QWidget):
     def __init__(self):
@@ -110,7 +113,7 @@ class Child(QWidget):
         
     def open(self):
         self.show()
-'''
+
 
 
 #首次运行时，根据配置表搜索前面板控件的函数，
@@ -165,6 +168,8 @@ class Mythread0(QThread):
         time.sleep(1)
         
         global xp
+        global xh
+        global tcp_socket
         while True:
             time.sleep(0.1)
            
@@ -172,15 +177,12 @@ class Mythread0(QThread):
             #self.breakSignal.emit(str(a))
             #模拟产生现场信号,用于刷新主界面
             lock.lock()
-            global xh
-            global tcp_socket
-
-            xxx=tcp_socket.recv(206)
-            xh=xxx.decode('UTF-8').split(" ")
             
-            xh=xh[1:]
-            #lock1.lock()
 
+            xxx=tcp_socket.recv(186)
+            xh=xxx.decode('UTF-8').split(" ")
+            xh=xh[1:]
+            gw.set(xh)
             #将读取的信号写入自建全局变量
             try:
                 j=0
@@ -191,7 +193,7 @@ class Mythread0(QThread):
             except:
                 pass
             
-            #lock1.unlock()
+            
             
             #发送信号到刷新函数,触发界面刷新函数
             self.breakSignal.emit(xh)
@@ -231,7 +233,6 @@ class Mythread2(QThread):
                 xxx=q.get()
                 ui.ee.setText(str(xxx))
                 send_data = xxx
-                tcp_socket.send(send_data.encode("utf-8"))
 
 #界面刷新函数，a是线程发送过来的信号，用于刷新界面
 def chuli(a):
@@ -247,12 +248,11 @@ def chuli(a):
               
     
     for k,p in zip(xpd,xpdindex):
-        #print(str(xh[14+p]))
         if str(xh[xo+p])=="1":
             k.setStyleSheet("background: rgb(0,255,0)")
         else:
             k.setStyleSheet("background: rgb(255,255,255)")
-
+    
   
 
 #打开 调节阀窗口函数
@@ -267,11 +267,14 @@ def convertt( x,p):
     p.open()
 
 
+
+##继承全局数据窗口类
+
 class MyWindow(QMainWindow, datab.Ui_MainWindow):
     def __init__(self, parent=None):
         super(MyWindow, self).__init__(parent)
         self.setupUi(self)
-   
+ 
 
 
 ###继承主界面的类
@@ -298,6 +301,8 @@ if __name__ == '__main__':
     child_ui.setupUi(child)
     ui.tx.clicked.connect( child.show ) 
   
+    #打开全局数据窗口
+    #打开QTdesinger画的子窗口，并在子窗口里面重写了open事件
     m=MyWindow()
     ui.pzb.clicked.connect( m.open) 
     
@@ -355,10 +360,11 @@ if __name__ == '__main__':
     thread1.start()
 
     #创建线程，用于发送控制信号
+   
     thread2 = Mythread2()
     thread2.breakSigna2.connect(chuli)
     thread2.start()
-
+  
 
     
     MainWindow.show()
