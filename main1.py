@@ -255,20 +255,45 @@ def chuli(a):
             k.setStyleSheet("background: rgb(255,255,255)")
     
 
+    
 
+    
 #开辟线程用于存储数据
-#获取操作员命令，发送控制信号的线程,将控制信号发送到下位机
 class Mythreadx(QThread):
     # 定义信号,定义参数为int类型
-    breakSigna5 = pyqtSignal(int)
     def __init__(self, parent=None):
         super().__init__(parent)
     
-    def run(self): 
+    def run(self):
+        a=0
+        client = InfluxDBClient('192.168.0.3', 8086,'root','123456',database='t')
         while True:
             time.sleep(0.5)
+            localtime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            w_json = [{
+                "measurement": 'tqazx',
+                "time": str(localtime),
+                "tags": {
+                'name': 1,
+                'categories': 2
+                    },
+                "fields": {
+                'price': 1,
+                'unit': 1,
+                'plp':4.9
+                    }
+            }]
+            client.write_points(w_json)
             print("hello world")
+            print(client)
+            a=a+1
+            if a>1220:
+                client.close()
+                break
     
+    
+        
+
         
 
 #打开 调节阀窗口函数

@@ -33,7 +33,7 @@ class Demo(QWidget):
         self.label.setGeometry(50, 20, 80, 20)  #位置，大小
 
         #上一次给定
-        self.labelt = QLabel('上次给定·', self)
+        self.labelt = QLabel('当前给定·', self)
         self.labelt.setAlignment(Qt.AlignCenter)
         self.labelt.setGeometry(150, 20, 80, 20)  #位置，大小
 
@@ -70,7 +70,6 @@ class Demo(QWidget):
     
     #重写关闭事件
     def closeEvent(self, event):
-        print("chongxie")
         self.sub_thread.is_on = False
         self.sub_thread.count = 0
         self.close()
@@ -83,8 +82,7 @@ class Demo(QWidget):
         #self.llock1.lock()                       #锁住自建的全局变量 
         xxxx=gl.get_value(str(self.x+"fs"))         #从全局变量获取值,用于更新子窗口的数据
         self.label.setText(xxxx)                    #更新反馈
-
-        xxx=gl.get_value(str(self.x+"kz"))   #更新控制
+        xxx=gl.get_value(str(self.x+"kz"))          #更新控制
         self.la.setText(xxx)                    #更新上次给定
 
        
@@ -95,19 +93,16 @@ class Demo(QWidget):
     
     def fs(self):
         x1=self.ip1.text()
-        #gl.set_value('score',self.x+"kz"+"+"+x1)  #向主程序发送值
         self.q.put(self.x+"+"+x1)       #将控制消息写入队列
 
 
     #不能直接重写show方法
     def open(self):
         print(self.x)
-        #self.plpp=True
         self.sub_thread.is_on = True         # 5
         self.sub_thread.start()
         self.setWindowTitle(self.x)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-
         self.show()
     
     def cd(self):
@@ -136,13 +131,8 @@ class subThread(QThread):
 
     def run(self):
         while self.is_on:   # 2
-            
-            #获取反馈信号
-            #gl.set_value('score', self.count) #设定值
-            #xxx=gl.get_value('e2')         #从全局变量获取值,用于更新子窗口的
             self.sub_signal.emit("world","hello")  #发送获取的值,用于更新子窗口的数据,这里只用来触发更新子窗口数据的函数
-            #qqq=self.q
-            #qqq.put("hello world")
+
             self.sleep(1)
             
             

@@ -82,7 +82,7 @@ class Demo(QWidget):
     #接收到子线程信号的处理函数,在子窗口显示反馈信息
     def set_label_func(self, fs0,fs1):
         
-        #self.llock1.lock()                       #锁住自建的全局变量 
+       
         self.la.setText(gl.get_value(str(self.x+"_o"))) 
         kdw=gl.get_value(str(self.x+"_k"))         #从全局变量获取值,获取开反馈，button_5
         gdw=gl.get_value(str(self.x+"_g"))         #从全局变量获取值,获取开反馈，button_6
@@ -110,16 +110,6 @@ class Demo(QWidget):
         
       
        
-        '''
-        global aaa
-        if xxx!=aaa:
-            self.ip1.setText(xxx)
-            aaa=xxx
-        else:
-            pass
-        '''
-       
-        #self.llock1.unlock()
 
 
 
