@@ -6,11 +6,11 @@ from matplotlib import pyplot as plt
 from scipy.interpolate import make_interp_spline
 from PyQt5.QtWidgets import *
 from PyQt5 import *
+from influxdb import InfluxDBClient
 
-
-from kpas import kpa     #导入压力转换模块
 import globalvar as gl   #导入自建的全局变量，用存储所有工位号及其实时数据，内部时字典格式
-import gwh as gw
+import gwh as gw         #导入工位号全局变量
+import shuju as sj        #导入数据全局变量
 
 from x import Ui_MainWindow   #导入主窗口
 import datab
@@ -18,7 +18,6 @@ import booll,floatt    #导入开关阀和调节阀子窗口
 import tx,qx
  
 gl._init()            #全局变量初始化
-#gw._init()            #全局变量初始化
 cgitb.enable()        #异常捕捉
 
 
@@ -39,6 +38,8 @@ xh=[]  #用于存储采集的现场信号
 jp=[]    #存储控件对应的数值索引
 address=""   #用于存储TCP服务器地址及端口
 size=0       #用于存储从TCP服务器接收的数据字节数
+
+ts=0    #标记值，用于判定是否开始存储数据
 
 '''
 class Main(Ui_MainWindow):
@@ -97,7 +98,7 @@ for i in range(1,wsdo_nrows):
 
 #计算模拟量的个数
 xo=len(PZAI)+len(PZAO)
-
+gw.set(PZAI+PZAO+PZDI+PZDO)
 #定义子窗口
 class Child(QWidget):
     def __init__(self):
@@ -182,7 +183,7 @@ class Mythread0(QThread):
             xxx=tcp_socket.recv(186)
             xh=xxx.decode('UTF-8').split(" ")
             xh=xh[1:]
-            gw.set(xh)
+            sj.set(xh)
             #将读取的信号写入自建全局变量
             try:
                 j=0
@@ -253,18 +254,43 @@ def chuli(a):
         else:
             k.setStyleSheet("background: rgb(255,255,255)")
     
-  
+
+
+#开辟线程用于存储数据
+#获取操作员命令，发送控制信号的线程,将控制信号发送到下位机
+class Mythreadx(QThread):
+    # 定义信号,定义参数为int类型
+    breakSigna5 = pyqtSignal(int)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+    
+    def run(self): 
+        while True:
+            time.sleep(0.5)
+            print("hello world")
+    
+        
 
 #打开 调节阀窗口函数
 def convert( x,p):
-    #print(x)
     p.open()
 
     
 #打开 开关阀窗口函数
 def convertt( x,p):
-    #print(x)
     p.open()
+
+
+
+###不能再函数内部实例化线程类
+threadx = Mythreadx()
+#存储函数
+def save():
+    global threadx
+    threadx.start()
+    print("save")
+def chhh():
+    pass
 
 
 
@@ -276,14 +302,12 @@ class MyWindow(QMainWindow, datab.Ui_MainWindow):
         self.setupUi(self)
  
 
-
 ###继承主界面的类
 class Main(Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        
     def prt(self):
-        print("jjjj")
+        pass
 
 
 if __name__ == '__main__':
@@ -340,12 +364,9 @@ if __name__ == '__main__':
     ui.bb6.clicked.connect(partial(convertt, "b6",booll.Demo("b6",q,lock1)))
     ui.bb7.clicked.connect(partial(convertt, "b7",booll.Demo("b7",q,lock1)))
 
-
-
-
-
-
-    
+    #点击存储按钮
+    #ui.p4.clicked.connect(partial(save))
+    ui.p4.clicked.connect(save)
     #首次运行，根据配置表搜索前面板控件的函数
     click_success()
    
