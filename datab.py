@@ -46,6 +46,9 @@ class Ui_MainWindow(object):
         #自动开始线程
         self.sub_thread.is_on = True         # 5
         self.sub_thread.start()
+        print("open")
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)   #顶层显示
+        self.showNormal()       #正常化显示，用于最小化窗口后，点击按钮，正常化显示窗口
         self.show()
         
     #重写关闭事件
