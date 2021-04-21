@@ -1,4 +1,5 @@
 import sys,time,socket
+from openpyxl import Workbook
 import random,queue,openpyxl,cgitb,threading
 from functools import partial
 from PyQt5.QtCore import *
@@ -8,13 +9,13 @@ from PyQt5.QtWidgets import *
 from PyQt5 import *
 from influxdb import InfluxDBClient
 
-import globalvar as gl   #导入自建的全局变量，用存储所有工位号及其实时数据，内部时字典格式
-import gwh as gw         #导入工位号全局变量
-import shuju as sj        #导入数据全局变量
+from globalfile import globalvar as gl   #导入自建的全局变量，用存储所有工位号及其实时数据，内部时字典格式
+from globalfile import gwh as gw         #导入工位号全局变量
+from globalfile import shuju as sj        #导入数据全局变量
 
 from x import Ui_MainWindow   #导入主窗口
-import datab
-import booll,floatt    #导入开关阀和调节阀子窗口 
+from sub import datab
+from sub import booll,floatt    #导入开关阀和调节阀子窗口 
 import tx,qx
  
 gl._init()            #全局变量初始化
@@ -71,13 +72,19 @@ wsao_nrows = wsao.max_row  #获得AO行数
 wsdi_nrows = wsdi.max_row  #获得DI行数
 wsdo_nrows = wsdo.max_row  #获得DI行数
 PZAI=[]                    #存储AI工位号
+PZAI_hh=[]                    #存储AI工位号的上限值
 PZAO=[]                    #存储AO工位号
 PZDI=[]
 PZDO=[]
 #读AI表格
+wsai.cell(row=4, column=2, value=10)
 for i in range(1,wsai_nrows):
     j= wsai.cell(row=i+1, column=1).value    #获取1+1行，第一列的值
     PZAI.append(j)
+    cdf=wsai.cell(row=i+1, column=6).value
+    PZAI_hh.append(cdf)
+print("ssdsssssd")
+print(PZAI_hh)
 
 #读AO表格
 for i in range(1,wsao_nrows):
@@ -176,7 +183,7 @@ class Mythread0(QThread):
             lock.lock()
             
 
-            xxx=tcp_socket.recv(114)
+            xxx=tcp_socket.recv(186)
             xh=xxx.decode('UTF-8').split(" ")
             xh=xh[1:]
             sj.set(xh)
@@ -285,7 +292,7 @@ class Mythreadx(QThread):
            
             a=a+1
             ui.pc.setText(str(a))
-            if a>10000000 and ts:
+            if ts==0:
                 client.close()
                 break
     
@@ -307,18 +314,40 @@ def save():
     global ts
     if ts==0:
         ts=1
-        ui.p4.setStyleSheet('''QPushButton{background:#6DDF6D;border-radius:5px;}QPushButton:hover{background:green;}''')
-    if ts==1:
-        ts=0
-        ui.p4.setStyleSheet('''QPushButton{background:#6DCCCD;border-radius:5px;}QPushButton:hover{background:green;}''')
-    global threadx
-    threadx.start()
+        ui.p4.setStyleSheet('''QPushButton{background:#32CD32;border-radius:5px;}QPushButton:hover{background:green;}''')
+        ui.p4.setText("正在存储")
+        global threadx
+        threadx.start()
+    else:
+        if ts==1:
+            ts=0
+            ui.p4.setStyleSheet('''QPushButton{background:#E6E6FA;border-radius:5px;}QPushButton:hover{background:green;}''')
+            ui.p4.setText("开始存储")
     
 
     print("save")
 def chhh():
     pass
 
+
+#修改配置表时，查找工位号
+def sr():
+    global PZAI_hh
+    g11=ui.g1.text()
+    if g11 in PZAI:
+        s=PZAI.index(g11)
+        #print("ssss"+str(s))
+        ui.gcsx.setText(str(PZAI_hh[s]))
+
+#修改配置表
+def pzxgdef():
+    
+    data1 = openpyxl.load_workbook('C:\\Users\\anshun\\Desktop\\AI.xlsx')
+    #wsai = data.get_sheet_by_name('AI')
+    www = data1['AI']
+    www.cell(4, 2).value="10"
+    print("ssssssssssss")
+    
 
 
 ##继承全局数据窗口类
@@ -357,10 +386,12 @@ if __name__ == '__main__':
     ui.pzb.clicked.connect( m.open) 
 
     #打开曲线窗口
+    '''
     cqx = QMainWindow()          
     cqx_ui = qx.Ui_MainWindow()
     cqx_ui.setupUi(cqx)
     ui.opqx.clicked.connect( cqx.show )   #打开
+    '''
     
     
    
@@ -387,6 +418,10 @@ if __name__ == '__main__':
     ui.bb6.clicked.connect(partial(convertt, "b6",booll.Demo("b6",q,lock1)))
     ui.bb7.clicked.connect(partial(convertt, "b7",booll.Demo("b7",q,lock1)))
 
+    #修改保存按钮外观
+    ui.p4.setStyleSheet('''QPushButton{background:#E6E6FA;border-radius:5px;}QPushButton:hover{background:green;}''')
+    ui.p4.setText("开始存储")
+
     #点击存储按钮
     #ui.p4.clicked.connect(partial(save))
     ui.p4.clicked.connect(save)
@@ -406,6 +441,12 @@ if __name__ == '__main__':
     thread2 = Mythread2()
     thread2.breakSigna2.connect(chuli)
     thread2.start()
+    
+    ####
+    #配置表修改
+    #监听提取间隔输入事件
+    ui.g1.textChanged.connect(sr)
+    ui.pzxg.clicked.connect(pzxgdef)
   
     MainWindow.show()
     sys.exit(app.exec_())

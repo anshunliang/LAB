@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout,QLineEdit
 import queue
 import sys
-import globalvar as gl  #导入自建的全局变量
+from globalfile import globalvar as gl  #导入自建的全局变量
 
 aaa="0000"
 #q=queue.Queue()

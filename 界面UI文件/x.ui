@@ -511,84 +511,6 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="g1">
-    <property name="geometry">
-     <rect>
-      <x>670</x>
-      <y>20</y>
-      <width>113</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="toolTipDuration">
-     <number>-3</number>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="pc_3">
-    <property name="geometry">
-     <rect>
-      <x>820</x>
-      <y>20</y>
-      <width>113</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="toolTipDuration">
-     <number>-3</number>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="pc_4">
-    <property name="geometry">
-     <rect>
-      <x>960</x>
-      <y>20</y>
-      <width>113</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="toolTipDuration">
-     <number>-3</number>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="pc_5">
-    <property name="geometry">
-     <rect>
-      <x>1080</x>
-      <y>20</y>
-      <width>113</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="toolTipDuration">
-     <number>-3</number>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="gcsx">
-    <property name="geometry">
-     <rect>
-      <x>1210</x>
-      <y>20</y>
-      <width>113</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="toolTipDuration">
-     <number>-3</number>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pzxg">
-    <property name="geometry">
-     <rect>
-      <x>1340</x>
-      <y>20</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>修改</string>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -596,7 +518,7 @@
      <x>0</x>
      <y>0</y>
      <width>1909</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menufeile">

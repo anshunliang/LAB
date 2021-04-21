@@ -13,9 +13,9 @@ import sys,queue,time
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout,QLineEdit
-import globalvar as gl
-import gwh as gw
-import shuju as sj
+from globalfile import globalvar as gl
+from globalfile import gwh as gw
+from globalfile import shuju as sj
 
 xp1=[]
 xp1index=[]
