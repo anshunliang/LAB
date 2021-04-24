@@ -136,6 +136,10 @@ foo=cdll.LoadLibrary("F:\\jiemian\\C\\x1.dll")
 foo.pp.argtypes = [POINTER(c_float),POINTER(c_float),POINTER(c_float),POINTER(c_float),POINTER(c_float),POINTER(c_float),c_int] 
 
 ps=pointer(pv)
+p1=pointer(ysxx)
+p2=pointer(ysss)
+p3=pointer(gzxx)
+p4=pointer(gzss)
 
 
 #foo.pp(pv,ysxx,ysss,gzxx,gzss,carrayjs)
@@ -401,6 +405,12 @@ def sr():
         ui.yuanshisx.setText(str(PZAI_yshh[s]))
         ui.gcxx.setText(str(PZAI_ll[s]))
         ui.gcsx.setText(str(PZAI_hh[s]))
+    else:
+        ui.yuanshixx.setText("破剑式")
+        ui.yuanshisx.setText("破刀式")
+        ui.gcxx.setText("破枪式")
+        ui.gcsx.setText("破剑式")
+
 
 #修改配置表
 def pzxgdef():
@@ -420,6 +430,11 @@ def pzxgdef():
         ws.cell(s+2,5).value=float(ui.gcxx.text())
         ws.cell(s+2,6).value=float(ui.gcsx.text())
         wb.save("AI.xlsx")
+        global p1,p2,p3,p4
+        p1.contents[s]=float(ui.yuanshixx.text())
+        p2.contents[s]=float(ui.yuanshisx.text())
+        p3.contents[s]=float(ui.gcxx.text())
+        p4.contents[s]=float(ui.gcsx.text())
         #修改配置文件
 
 
