@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import *
 from ctypes import *
 from influxdb import InfluxDBClient
+from auto import autocontronl
 
 from globalfile import globalvar as gl   #导入自建的全局变量，用存储所有工位号及其实时数据，内部时字典格式
 from globalfile import gwh as gw         #导入工位号全局变量
@@ -181,7 +182,6 @@ def click_success():
             if MainWindow.findChild(QLineEdit,i):   #根据反馈AI工位号获取前面板控件
                xp.append(MainWindow.findChild(QLineEdit,i))
                xpindex.append(j1)
-             
                j1+=1
             else:
                 j1+=1
@@ -228,7 +228,8 @@ class Mythread0(QThread):
             xxx=tcp_socket.recv(186)
             xhh=xxx.decode('UTF-8').split(" ")
             xh=xhh[1:]
-            sj.set(xh)
+            #sj.set(xh)
+            #print(sj.get()[2])
             #将读取的信号写入自建全局变量
             try:
                 j=0
@@ -238,8 +239,8 @@ class Mythread0(QThread):
                     j+=1
             except:
                 pass
-            cccc=[]
-            zaq=0
+            
+            zaq=0   #临时变量
             global ps
             for i in xh[0:len(PZAI)]:
                 #cccc.append(float(i))
@@ -247,15 +248,15 @@ class Mythread0(QThread):
                 print(ps.contents)
                 zaq+=1
             zaq=0
+            #调用动态链接库，执行换算
             foo.pp(pv,ysxx,ysss,gzxx,gzss,xsxs,len(PZAI))
 
             global cs
             cs=[]
             for i in xsxs:
                 cs.append(round(i, 2))
-            
-            print(cs)
-            
+            #print(cs)
+            sj.set(cs)
             
             
             
@@ -307,7 +308,7 @@ def chuli(a):
     global xpd     #布尔量工位号
     global xo
     global cs
-
+    autocontronl(q)   #执行自动控制代码
     
     for i,j in zip(xp,xpindex):
         #i.setText(str(xh[j]))
