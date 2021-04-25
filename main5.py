@@ -1,4 +1,4 @@
-import sys,time,socket
+import sys,time,socket,os,datetime
 from openpyxl import *
 import random,queue,openpyxl,cgitb,threading
 from functools import partial
@@ -29,6 +29,8 @@ q=queue.Queue()   #实例化队列，针对控制消息获取
 
 
 #建立全局变量
+pzfile='F:\\jiemian\\AI.xlsx'  #配置文件的路径
+pzfiledll="F:\\jiemian\C\\x1.dll"
 xp=[]  #用于存储AI控件
 xpindex=[]
 xpd=[]  #用于存储DI控件
@@ -56,14 +58,12 @@ class Main(Ui_MainWindow):
 
 #建立TCP通信
 tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 server_addr = ("127.0.0.1",8000)
 tcp_socket.connect(server_addr)
         
-
-
-
 #读取配置表
-data = openpyxl.load_workbook('AI.xlsx')
+data = openpyxl.load_workbook(pzfile)
 wsai = data.get_sheet_by_name('AI')
 wsao = data.get_sheet_by_name('AO')
 wsdi = data.get_sheet_by_name('DI')
@@ -133,7 +133,7 @@ gzss = (c_float*len(PZAI))(*PZAI_hh)         #模拟工程值上限
 xsxs=PZAI
 xsxs = (c_float*len(PZAI))(*PZAI_hh)   #模拟换算结果，占位
 
-foo=cdll.LoadLibrary("F:\\jiemian\\C\\x1.dll")
+foo=cdll.LoadLibrary(pzfiledll)
 foo.pp.argtypes = [POINTER(c_float),POINTER(c_float),POINTER(c_float),POINTER(c_float),POINTER(c_float),POINTER(c_float),c_int] 
 
 ps=pointer(pv)
@@ -189,7 +189,6 @@ def click_success():
             pass
     j1=0
     j=0
-  
     for i in PZDI:                                 #根据反馈DI工位号获取前面板控件
         try:
             if MainWindow.findChild(QPushButton,i):
@@ -224,28 +223,38 @@ class Mythread0(QThread):
             #模拟产生现场信号,用于刷新主界面
             lock.lock()
             
-
-            xxx=tcp_socket.recv(186)
-            xhh=xxx.decode('UTF-8').split(" ")
-            xh=xhh[1:]
-            #sj.set(xh)
+            try:
+                xxx=tcp_socket.recv(186)
+                xhh=xxx.decode('UTF-8').split(" ")
+                xh=xhh[1:]
+            except:
+                tcp_socket.close()
+                server_addr = ("127.0.0.1",8000)
+                tcp_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                tcp_socket1.connect(server_addr)
+                tcp_socket=tcp_socket1
+                del tcp_socket1
+                print("oooooooooooooooooooooo")
+                
+            sj.set(xh)
             #print(sj.get()[2])
             #将读取的信号写入自建全局变量
             try:
                 j=0
                 for i in PZAI+PZAO+PZDI+PZDO:
                     gl.set_value(i, str(xh[j]))     #设定值
-                    ssss[i]=str(xh[j])
+                    ssss[i]=float(xh[j])
+                    #ssss[i]=(xh[j])
                     j+=1
             except:
                 pass
-            
+            #print(ssss)
             zaq=0   #临时变量
             global ps
             for i in xh[0:len(PZAI)]:
                 #cccc.append(float(i))
                 ps.contents[zaq]=float(i)
-                print(ps.contents)
+                #print(ps.contents)
                 zaq+=1
             zaq=0
             #调用动态链接库，执行换算
@@ -255,19 +264,14 @@ class Mythread0(QThread):
             cs=[]
             for i in xsxs:
                 cs.append(round(i, 2))
-          
-            sj.set(cs)  #假如在python这边执行换算
+            #print(cs)
+            sj.set(cs)
             
             
             
             #发送信号到刷新函数,触发界面刷新函数
             self.breakSignal.emit(xh)
-
-
             lock.unlock()
-            
-            
-
 
 #
 class Mythread1(QThread):
@@ -291,13 +295,16 @@ class Mythread2(QThread):
 
     def run(self): 
         while True:
-            time.sleep(0.1)
+            time.sleep(1)
             #此处获取操作员命令 
             if not q.empty():
                 xxx=q.get()
                 ui.ee.setText(str(xxx))
                 send_data = xxx
-                tcp_socket.send(send_data.encode("utf-8"))
+                try:
+                    tcp_socket.send(send_data.encode("utf-8"))
+                except:
+                    pass
 
 #界面刷新函数，a是线程发送过来的信号，用于刷新界面
 def chuli(a):
@@ -342,10 +349,10 @@ class Mythreadx(QThread):
             start=time.clock()
             time.sleep(0.1)
             
-            localtime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            localtime = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
             w_json = [{
-                "measurement": 't16',
-                "time": a,
+                "measurement": 't27',
+                #"time": "ppp",
                 "tags": {
                 'name': 1,
                 'categories': 2
@@ -354,7 +361,7 @@ class Mythreadx(QThread):
             }]
             client.write_points(w_json)
             end=time.clock()
-            print(str(end-start)+"秒")
+            #print(str(end-start)+"秒")
            
             a=a+1
             ui.pc.setText(str(a))
@@ -389,6 +396,8 @@ def save():
             ts=0
             ui.p4.setStyleSheet('''QPushButton{background:#E6E6FA;border-radius:5px;}QPushButton:hover{background:green;}''')
             ui.p4.setText("开始存储")
+    
+
     print("save")
 def chhh():
     pass
@@ -398,6 +407,7 @@ def chhh():
 def sr():
     #global PZAI_hh
     g11=ui.g1.text()
+    print("oooooooooooooooooooooooooooo")
     if g11 in PZAI:
         s=PZAI.index(g11)
         ui.yuanshixx.setText(str(PZAI_ysll[s]))
@@ -408,16 +418,17 @@ def sr():
         ui.yuanshixx.setText("破剑式")
         ui.yuanshisx.setText("破刀式")
         ui.gcxx.setText("破枪式")
-        ui.gcsx.setText("荡剑式")
+        ui.gcsx.setText("破剑式")
 
 
 #修改配置表
 def pzxgdef():
-
     g11=ui.g1.text()         #获取被改工位号
     if g11 in PZAI:
         #修改配置文件
-        wb=load_workbook("AI.xlsx")
+        global pzfile
+        wb = openpyxl.load_workbook(pzfile)
+        #wb=load_workbook("C:\\Users\\lh\\Desktop\\p-test\\lab1\\LAB\\AI.xlsx'")
         ws=wb["AI"]
         s=PZAI.index(g11)
         PZAI_ll[s]=float(ui.gcxx.text())
@@ -426,7 +437,7 @@ def pzxgdef():
         ws.cell(s+2,4).value=float(ui.yuanshisx.text())
         ws.cell(s+2,5).value=float(ui.gcxx.text())
         ws.cell(s+2,6).value=float(ui.gcsx.text())
-        wb.save("AI.xlsx")
+        wb.save(pzfile)
         global p1,p2,p3,p4
         p1.contents[s]=float(ui.yuanshixx.text())
         p2.contents[s]=float(ui.yuanshisx.text())
@@ -434,6 +445,11 @@ def pzxgdef():
         p4.contents[s]=float(ui.gcsx.text())
         #修改配置文件
 
+
+
+    
+    
+    
 
 
 ##继承全局数据窗口类
