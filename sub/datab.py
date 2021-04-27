@@ -119,7 +119,7 @@ class Ui_MainWindow(object):
         global xp1index
         global xp1
         for i,j in zip(xp1,xp1index):
-            i.setText(s[j])
+            i.setText(str(s[j]))
       
         
 #子窗口用于刷新信号的线程

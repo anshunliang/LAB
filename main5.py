@@ -438,16 +438,13 @@ def pzxgdef():
         ws.cell(s+2,5).value=float(ui.gcxx.text())
         ws.cell(s+2,6).value=float(ui.gcsx.text())
         wb.save(pzfile)
+        
         global p1,p2,p3,p4
         p1.contents[s]=float(ui.yuanshixx.text())
         p2.contents[s]=float(ui.yuanshisx.text())
         p3.contents[s]=float(ui.gcxx.text())
         p4.contents[s]=float(ui.gcsx.text())
-        #修改配置文件
-
-
-
-    
+        
     
     
 
@@ -549,6 +546,9 @@ if __name__ == '__main__':
     #监听提取间隔输入事件
     ui.g1.textChanged.connect(sr)
     ui.pzxg.clicked.connect(pzxgdef)
-  
+    
+    
+    #ui.statusBar().showMessage('状态栏',0)
+    #ui.statusBar.showMessage('正在写入')
     MainWindow.show()
     sys.exit(app.exec_())
